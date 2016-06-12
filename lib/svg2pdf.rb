@@ -33,6 +33,12 @@ module Svg2pdf
     processor.process
   end
 
+  def self.convert_to_img_data(svg, format, options={})
+    options = config.to_hash.merge!(options)
+    processor = Processor.new(svg, :from_data, format, options)
+    processor.convert
+  end
+
   class Config
     attr_accessor :debug, :output_name, :ratio, :use_temporary_dir, :working_dir
 
@@ -103,6 +109,7 @@ module Svg2pdf
     def render_img_data
       setup
       @context = create_context Cairo::FORMAT_ARGB32
+      @context.target
     end
 
     def setup
