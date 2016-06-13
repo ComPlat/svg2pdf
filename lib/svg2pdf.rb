@@ -33,6 +33,12 @@ module Svg2pdf
     processor.process
   end
 
+  def self.convert_to_img_data(svg, format, options={})
+    options = config.to_hash.merge!(options)
+    processor = Processor.new(svg, :from_data, format, options)
+    processor.convert
+  end
+
   class Config
     attr_accessor :debug, :output_name, :ratio, :use_temporary_dir, :working_dir
 
@@ -70,6 +76,14 @@ module Svg2pdf
       end
     end
 
+    def convert
+      case @mode
+        when :jpeg, :jpg, :png  then render_img_data
+        #when :pdf, :ps          then render
+        else raise Svg2pdf::UnsupportedFormatError, "Invalid output format: %s" % @mode.to_s
+      end
+    end
+
     private
 
     def render
@@ -90,6 +104,12 @@ module Svg2pdf
       @pixbuf.save(@options[:output_file], @mode.to_s)
 
       File.new @options[:output_file]
+    end
+
+    def render_img_data
+      setup
+      @context = create_context Cairo::FORMAT_ARGB32
+      @context.target
     end
 
     def setup
